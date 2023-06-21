@@ -1,10 +1,11 @@
 package main
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"os"
-	"os/signal"
+	"strings"
 
 	"http_md5/request"
 )
@@ -14,18 +15,13 @@ var parallel = flag.Int("parallel", 10, "Maximum number of parallel requests")
 func main() {
 	flag.Parse()
 
-	urls :=  flag.Args()
+	urls := flag.Args()
 	taskQueue := make(chan string, len(urls))
 	for _, url := range urls {
 		taskQueue <- url
 	}
-	close(taskQueue)
 
 	threadNumber := *parallel
-	if len(urls) < threadNumber {
-		threadNumber = len(urls)
-	}
-
 	for i := 0; i < threadNumber; i++ {
 		go func() {
 			for url := range taskQueue {
@@ -37,8 +33,12 @@ func main() {
 		}()
 	}
 
-	// only stopping on ^C
-	quit := make(chan os.Signal, 1)
-	signal.Notify(quit, os.Interrupt)
-	<-quit
+	reader := bufio.NewReader(os.Stdin)
+	for {
+		text, _ := reader.ReadString('\n')
+		urls = strings.Fields(strings.Replace(text, "\n", "", -1))
+		for _, url := range urls {
+			taskQueue <- url
+		}
+	}
 }
