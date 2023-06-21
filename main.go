@@ -15,6 +15,7 @@ var parallel = flag.Int("parallel", 10, "Maximum number of parallel requests")
 func main() {
 	flag.Parse()
 
+	// Reading initial arguments
 	urls := flag.Args()
 	taskQueue := make(chan string, len(urls))
 	for _, url := range urls {
@@ -28,11 +29,14 @@ func main() {
 				res, err := request.HttpToMD5(url)
 				if err == nil {
 					fmt.Printf("%s %s\n", res.Url, res.Hash)
+				} else {
+					fmt.Printf("Failed to request \"%s\": %s\n", res.Url, err)
 				}
 			}
 		}()
 	}
 
+	// Reading arguments after script started running
 	reader := bufio.NewReader(os.Stdin)
 	for {
 		text, _ := reader.ReadString('\n')
