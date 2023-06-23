@@ -26,7 +26,7 @@ func main() {
 	for i := 0; i < threadNumber; i++ {
 		go func() {
 			for url := range taskQueue {
-				res, err := request.HttpToMD5(url)
+				res, err := request.HttpToMD5(url, request.Client{})
 				if err == nil {
 					fmt.Printf("%s %s\n", res.Url, res.Hash)
 				} else {
